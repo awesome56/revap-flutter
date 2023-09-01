@@ -7,12 +7,12 @@ import 'package:revap/screens/otp/otp_screen.dart';
 import '../../../constants.dart';
 import '../../../size_config.dart';
 
-class CompleteProfileForm extends StatefulWidget {
+class ResetPasswordForm extends StatefulWidget {
   @override
-  _CompleteProfileFormState createState() => _CompleteProfileFormState();
+  _ResetPasswordFormState createState() => _ResetPasswordFormState();
 }
 
-class _CompleteProfileFormState extends State<CompleteProfileForm> {
+class _ResetPasswordFormState extends State<ResetPasswordForm> {
   final _formKey = GlobalKey<FormState>();
   final List<String?> errors = [];
   String? firstName;

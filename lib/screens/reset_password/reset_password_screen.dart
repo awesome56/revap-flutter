@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 
 import 'components/body.dart';
 
-class CompleteProfileScreen extends StatelessWidget {
-  static String routeName = "/complete_profile";
+class ResetPasswordScreen extends StatelessWidget {
+  static String routeName = "/reset_password";
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Sign Up'),
+        title: Text(''),
       ),
       body: Body(),
     );

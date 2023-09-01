@@ -5,7 +5,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:revap/components/custom_surfix_icon.dart';
 import 'package:revap/components/default_button.dart';
 import 'package:revap/components/form_error.dart';
-import 'package:revap/screens/complete_profile/complete_profile_screen.dart';
+import 'package:revap/screens/reset_password/reset_password_screen.dart';
 import 'package:revap/screens/otp/otp_screen.dart';
 
 import '../../../constants.dart';
@@ -75,7 +75,12 @@ class _SignUpFormState extends State<SignUpForm> {
                 if (response.statusCode == 201) {
                   print(await response.stream.bytesToString());
                   // Success! Now navigate to the next screen
-                  Navigator.pushReplacementNamed(context, OtpScreen.routeName);
+                  Navigator.pushReplacementNamed(context, OtpScreen.routeName,
+                      arguments: {
+                        'email': email, // Send email to OTP screen
+                        'purpose': "Verify your email",
+                        'expiration': 5,
+                      });
                 } else {
                   // Display error toast from the API response
                   String errorMessage = await response.stream.bytesToString();
