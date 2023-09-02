@@ -7,6 +7,7 @@ import 'package:revap/components/default_button.dart';
 import 'package:revap/components/form_error.dart';
 import 'package:revap/screens/reset_password/reset_password_screen.dart';
 import 'package:revap/screens/otp/otp_screen.dart';
+import 'package:revap/components/loadingDialog.dart';
 
 import '../../../constants.dart';
 import '../../../size_config.dart';
@@ -55,6 +56,7 @@ class _SignUpFormState extends State<SignUpForm> {
             text: "Continue",
             press: () async {
               if (_formKey.currentState!.validate()) {
+                LoadingDialog.show(context);
                 _formKey.currentState!.save();
                 // if all are valid then go to success screen
                 var headers = {'Content-Type': 'application/json'};
@@ -75,6 +77,9 @@ class _SignUpFormState extends State<SignUpForm> {
                 if (response.statusCode == 201) {
                   print(await response.stream.bytesToString());
                   // Success! Now navigate to the next screen
+                  // ignore: use_build_context_synchronously
+                  LoadingDialog.hide(context);
+                  // ignore: use_build_context_synchronously
                   Navigator.pushReplacementNamed(context, OtpScreen.routeName,
                       arguments: {
                         'email': email, // Send email to OTP screen
@@ -84,13 +89,18 @@ class _SignUpFormState extends State<SignUpForm> {
                 } else {
                   // Display error toast from the API response
                   String errorMessage = await response.stream.bytesToString();
-                  Fluttertoast.showToast(
-                    msg: errorMessage,
-                    toastLength: Toast.LENGTH_LONG,
-                    gravity: ToastGravity.CENTER,
-                    backgroundColor:
-                        Color(0xFF083663), // Change background color here
-                    textColor: Colors.white,
+                  // ignore: use_build_context_synchronously
+                  LoadingDialog.hide(context);
+                  // Fluttertoast.showToast(
+                  //   msg: errorMessage,
+                  //   toastLength: Toast.LENGTH_LONG,
+                  //   gravity: ToastGravity.CENTER,
+                  //   backgroundColor:
+                  //       Color(0xFF083663), // Change background color here
+                  //   textColor: Colors.white,
+                  // );
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(errorMessage)),
                   );
                 }
               }

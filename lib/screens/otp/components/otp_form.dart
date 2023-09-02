@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:revap/components/default_button.dart';
+import 'package:revap/screens/home/home_screen.dart';
 import 'package:revap/size_config.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:revap/screens/login_success/login_success_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:revap/components/loadingDialog.dart';
 
 import '../../../constants.dart';
 
@@ -62,6 +64,7 @@ class _OtpFormState extends State<OtpForm> {
   }
 
   void verifyOtp() async {
+    LoadingDialog.show(context);
     var headers = {'Content-Type': 'application/json'};
     var email = Uri.encodeComponent(widget.email); // Encode the email value
     var apiUrl =
@@ -79,8 +82,11 @@ class _OtpFormState extends State<OtpForm> {
 
     if (response.statusCode == 202) {
       print(await response.stream.bytesToString());
+      // ignore: use_build_context_synchronously
+      LoadingDialog.hide(context);
       // TODO: Handle successful verification
-      Navigator.pushReplacementNamed(context, LoginSuccessScreen.routeName);
+      // ignore: use_build_context_synchronously
+      Navigator.pushReplacementNamed(context, HomeScreen.routeName);
 
       SharedPreferences prefs = await SharedPreferences.getInstance();
       Map<String, dynamic> userJson =
@@ -96,6 +102,8 @@ class _OtpFormState extends State<OtpForm> {
       try {
         Map<String, dynamic> errorJson = json.decode(errorMessage);
         String error = errorJson['error'];
+        // ignore: use_build_context_synchronously
+        LoadingDialog.hide(context);
         Fluttertoast.showToast(
           msg: error,
           toastLength: Toast.LENGTH_LONG,
@@ -105,6 +113,8 @@ class _OtpFormState extends State<OtpForm> {
         );
       } catch (e) {
         // If JSON decoding fails, display a generic error message
+        // ignore: use_build_context_synchronously
+        LoadingDialog.hide(context);
         Fluttertoast.showToast(
           msg: "An error occurred. Please try again.",
           toastLength: Toast.LENGTH_LONG,
