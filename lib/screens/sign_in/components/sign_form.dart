@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:fluttertoast/fluttertoast.dart';
@@ -6,9 +7,11 @@ import 'package:revap/components/custom_surfix_icon.dart';
 import 'package:revap/components/form_error.dart';
 import 'package:revap/helper/keyboard.dart';
 import 'package:revap/screens/forgot_password/forgot_password_screen.dart';
+import 'package:revap/screens/home/home_screen.dart';
 import 'package:revap/screens/login_success/login_success_screen.dart';
 import 'package:revap/screens/otp/otp_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:revap/components/loadingDialog.dart';
 
 import '../../../components/default_button.dart';
 import '../../../constants.dart';
@@ -79,75 +82,192 @@ class _SignFormState extends State<SignForm> {
             text: "Continue",
             press: () async {
               if (_formKey.currentState!.validate()) {
+                LoadingDialog.show(context);
                 _formKey.currentState!.save();
                 // if all are valid then go to success screen
                 KeyboardUtil.hideKeyboard(context);
                 // Navigator.pushNamed(context, LoginSuccessScreen.routeName);
 
                 var headers = {'Content-Type': 'application/json'};
-                var request = http.Request(
-                    'POST',
-                    Uri.parse(
-                        'https://revap-api-6f16447151c5.herokuapp.com/api/v1/auth/login'));
+                var request =
+                    http.Request('POST', Uri.parse('$kUrl/auth/login'));
                 request.body = json.encode({
                   "email": email,
                   "password": password,
                 });
                 request.headers.addAll(headers);
 
-                http.StreamedResponse response = await request.send();
+                try {
+                  http.StreamedResponse response = await request.send();
 
-                if (response.statusCode == 200) {
-                  // Credentials are correct but user is not verified
-                  // Navigator.pushReplacementNamed(context, OtpScreen.routeName);
-                  Navigator.pushReplacementNamed(context, OtpScreen.routeName,
-                      arguments: {
-                        'email': email, // Send email to OTP screen
-                        'purpose': "Verify your email",
-                        'expiration': 5,
-                      });
-                } else if (response.statusCode == 202) {
-                  // Successful login, navigate to the home screen
-                  Navigator.pushReplacementNamed(
-                      context, LoginSuccessScreen.routeName);
-                  errors.clear(); // Clear error messages
-
-                  // Save data to shared preferences
-                  SharedPreferences prefs =
-                      await SharedPreferences.getInstance();
-                  Map<String, dynamic> userJson =
-                      json.decode(await response.stream.bytesToString());
-                  prefs.setString('refreshToken', userJson['user']['refresh']);
-                  prefs.setString('accessToken', userJson['user']['access']);
-                  prefs.setString('userName', userJson['user']['name']);
-                  prefs.setString('userEmail', userJson['user']['email']);
-                  prefs.setBool('isUserVerified', userJson['user']['verified']);
-                } else if (response.statusCode == 400 ||
-                    response.statusCode == 401) {
-                  // Display error toast from the API response
-                  String errorMessage = await response.stream.bytesToString();
-                  try {
-                    Map<String, dynamic> errorJson = json.decode(errorMessage);
-                    String error = errorJson['error'];
-                    Fluttertoast.showToast(
-                      msg: error,
-                      toastLength: Toast.LENGTH_LONG,
-                      gravity: ToastGravity.CENTER,
-                      backgroundColor: Color(0xFF083663),
-                      textColor: Colors.white,
-                    );
-                  } catch (e) {
-                    // If JSON decoding fails, display a generic error message
-                    Fluttertoast.showToast(
-                      msg: "An error occurred. Please try again.",
-                      toastLength: Toast.LENGTH_LONG,
-                      gravity: ToastGravity.CENTER,
-                      backgroundColor: Color(0xFF083663),
-                      textColor: Colors.white,
+                  if (response.statusCode == 200) {
+                    // Credentials are correct but user is not verified
+                    // Navigator.pushReplacementNamed(context, OtpScreen.routeName);
+                    // ignore: use_build_context_synchronously
+                    LoadingDialog.hide(context);
+                    // ignore: use_build_context_synchronously
+                    Navigator.pushReplacementNamed(context, OtpScreen.routeName,
+                        arguments: {
+                          'email': email, // Send email to OTP screen
+                          'purpose': "Verify your email",
+                          'expiration': 5,
+                        });
+                  } else if (response.statusCode == 202) {
+                    // Successful login, navigate to the home screen
+                    // Save data to shared preferences
+                    SharedPreferences prefs =
+                        await SharedPreferences.getInstance();
+                    Map<String, dynamic> userJson =
+                        json.decode(await response.stream.bytesToString());
+                    prefs.setString(
+                        'refreshToken', userJson['user']['refresh']);
+                    prefs.setString('accessToken', userJson['user']['access']);
+                    prefs.setString('userName', userJson['user']['name']);
+                    prefs.setString('userEmail', userJson['user']['email']);
+                    // ignore: use_build_context_synchronously
+                    LoadingDialog.hide(context);
+                    // ignore: use_build_context_synchronously
+                    Navigator.pushReplacementNamed(
+                        context, HomeScreen.routeName);
+                    errors.clear(); // Clear error messages
+                  } else if (response.statusCode == 400 ||
+                      response.statusCode == 401) {
+                    // Display error toast from the API response
+                    String errorMessage = await response.stream.bytesToString();
+                    try {
+                      Map<String, dynamic> errorJson =
+                          json.decode(errorMessage);
+                      String error = errorJson['error'];
+                      // ignore: use_build_context_synchronously
+                      LoadingDialog.hide(context);
+                      Fluttertoast.showToast(
+                        msg: error,
+                        toastLength: Toast.LENGTH_LONG,
+                        gravity: ToastGravity.CENTER,
+                        backgroundColor: Color(0xFF083663),
+                        textColor: Colors.white,
+                      );
+                    } catch (e) {
+                      // If JSON decoding fails, display a generic error message
+                      // ignore: use_build_context_synchronously
+                      LoadingDialog.hide(context);
+                      Fluttertoast.showToast(
+                        msg: "An error occurred. Please try again.",
+                        toastLength: Toast.LENGTH_LONG,
+                        gravity: ToastGravity.CENTER,
+                        backgroundColor: Color(0xFF083663),
+                        textColor: Colors.white,
+                      );
+                    }
+                  } else {
+                    // ignore: use_build_context_synchronously
+                    LoadingDialog.hide(context);
+                    // Handle other status codes or errors
+                    // ignore: use_build_context_synchronously
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: const Center(
+                            child: Text(
+                              "Error",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          content: const Text(
+                            "An error occured, We are working on it",
+                            style: TextStyle(
+                              color: Colors
+                                  .red, // Set the content text color to red
+                            ),
+                          ),
+                          actions: [
+                            TextButton(
+                              child: const Text("Close"),
+                              onPressed: () {
+                                LoadingDialog.hide(context);
+                              },
+                            ),
+                          ],
+                        );
+                      },
                     );
                   }
-                } else {
-                  // Handle other status codes or errors
+                } catch (e) {
+                  if (e is SocketException) {
+                    // You can throw a custom network error here if needed.
+                    // ignore: use_build_context_synchronously
+                    LoadingDialog.hide(context);
+                    // ignore: use_build_context_synchronously
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: const Center(
+                            child: Text(
+                              "Network Error",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          content: const Text(
+                            "Network error: Failed to connect to network",
+                            style: TextStyle(
+                              color: Colors
+                                  .red, // Set the content text color to red
+                            ),
+                          ),
+                          actions: [
+                            TextButton(
+                              child: Text("Close"),
+                              onPressed: () {
+                                LoadingDialog.hide(context);
+                              },
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  } else {
+                    // Handle other exceptions here
+                    // ignore: use_build_context_synchronously
+                    LoadingDialog.hide(context);
+                    print("Other error: $e");
+                    // ignore: use_build_context_synchronously
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: const Center(
+                            child: Text(
+                              "Error",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          content: Text(
+                            "An error occured: $e",
+                            style: const TextStyle(
+                              color: Colors
+                                  .red, // Set the content text color to red
+                            ),
+                          ),
+                          actions: [
+                            TextButton(
+                              child: Text("Close"),
+                              onPressed: () {
+                                LoadingDialog.hide(context);
+                              },
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  }
                 }
               }
             },

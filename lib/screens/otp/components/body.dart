@@ -12,7 +12,7 @@ class Body extends StatefulWidget {
   const Body({Key? key, this.otpData}) : super(key: key);
 
   @override
-  _BodyState createState() => _BodyState();
+  State<Body> createState() => _BodyState();
 }
 
 class _BodyState extends State<Body> {
@@ -64,6 +64,7 @@ class _BodyState extends State<Body> {
       Map<String, dynamic> responseJson = json.decode(responseBody);
       String message = responseJson['msg'];
 
+      // ignore: use_build_context_synchronously
       showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -89,6 +90,7 @@ class _BodyState extends State<Body> {
       try {
         Map<String, dynamic> errorJson = json.decode(errorMessage);
         String error = errorJson['error'];
+        // ignore: use_build_context_synchronously
         showDialog(
           context: context,
           builder: (BuildContext context) {
@@ -108,6 +110,7 @@ class _BodyState extends State<Body> {
         );
       } catch (e) {
         // If JSON decoding fails, display a generic error message
+        // ignore: use_build_context_synchronously
         showDialog(
           context: context,
           builder: (BuildContext context) {
@@ -156,7 +159,7 @@ class _BodyState extends State<Body> {
                 purpose,
                 style: headingStyle,
               ),
-              Text("We sent your code to $email"),
+              Text("A verification code has been sent to $email"),
               buildTimer(),
               ElevatedButton(
                 onPressed: isButtonEnabled

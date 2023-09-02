@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:revap/size_config.dart';
 
 import 'components/body.dart';
 

@@ -4,9 +4,11 @@ import 'package:revap/components/default_button.dart';
 import 'package:revap/components/form_error.dart';
 import 'package:revap/components/no_account_text.dart';
 import 'package:revap/screens/reset_password/reset_password_screen.dart';
+import 'package:revap/components/loadingDialog.dart';
 import 'package:revap/size_config.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'dart:io'; // Import the 'dart:io' library for SocketException
 
 import '../../../constants.dart';
 
@@ -55,16 +57,25 @@ class ForgotPassForm extends StatefulWidget {
 class _ForgotPassFormState extends State<ForgotPassForm> {
   final _formKey = GlobalKey<FormState>();
   List<String> errors = [];
-  String? email;
+  TextEditingController emailController =
+      TextEditingController(); // Add this controller
+
   @override
+  void dispose() {
+    emailController
+        .dispose(); // Dispose of the controller to avoid memory leaks
+    super.dispose();
+  }
+
   Widget build(BuildContext context) {
     return Form(
       key: _formKey,
       child: Column(
         children: [
           TextFormField(
+            controller: emailController, // Use the controller here
             keyboardType: TextInputType.emailAddress,
-            onSaved: (newValue) => email = newValue,
+            // onSaved: (newValue) => email = newValue,
             onChanged: (value) {
               if (value.isNotEmpty && errors.contains(kEmailNullError)) {
                 setState(() {
@@ -104,81 +115,137 @@ class _ForgotPassFormState extends State<ForgotPassForm> {
           FormError(errors: errors),
           SizedBox(height: SizeConfig.screenHeight * 0.1),
           DefaultButton(
-            text: "Continue",
-            press: () async {
-              if (_formKey.currentState!.validate()) {
-                // Send forgot password request to API
-                var request = http.Request(
-                    'GET', Uri.parse('$kUrl/auth/forgotpassword/$email'));
-
-                http.StreamedResponse response = await request.send();
-
-                if (response.statusCode == 201) {
-                  print(await response.stream.bytesToString());
-                  // TODO: Handle successful forgot password request
-                  // ignore: use_build_context_synchronously
-                  Navigator.pushReplacementNamed(
-                      context, ResetPasswordScreen.routeName,
-                      arguments: {
-                        'email': email, // Send email to OTP screen
-                        'purpose': "Reset Passord",
-                        'expiration': 5,
-                      });
-                } else if (response.statusCode == 404) {
-                  // Display error toast from the API response
-                  String errorMessage = await response.stream.bytesToString();
+              text: "Continue",
+              press: () async {
+                if (_formKey.currentState!.validate()) {
+                  LoadingDialog.show(context);
                   try {
-                    Map<String, dynamic> errorJson = json.decode(errorMessage);
-                    String error = errorJson['error'];
-                    // ignore: use_build_context_synchronously
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          title: const Text("Error"),
-                          content: Text(error),
-                          actions: [
-                            TextButton(
-                              child: const Text("Close"),
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
-                            ),
-                          ],
+                    // Send forgot password request to API
+                    String email = emailController.text;
+                    var request = http.Request(
+                        'GET', Uri.parse('$kUrl/auth/forgotpassword/$email'));
+
+                    http.StreamedResponse response = await request.send();
+
+                    if (response.statusCode == 201) {
+                      print(await response.stream.bytesToString());
+                      // TODO: Handle successful forgot password request
+                      // ignore: use_build_context_synchronously
+                      LoadingDialog.hide(context);
+                      // ignore: use_build_context_synchronously
+                      Navigator.pushReplacementNamed(
+                          context, ResetPasswordScreen.routeName,
+                          arguments: {
+                            'email': emailController
+                                .text, // Send email to OTP screen
+                            'purpose': "Reset Passord",
+                            'expiration': 5,
+                          });
+                    } else if (response.statusCode == 404) {
+                      // Display error toast from the API response
+                      String errorMessage =
+                          await response.stream.bytesToString();
+                      try {
+                        Map<String, dynamic> errorJson =
+                            json.decode(errorMessage);
+                        String error = errorJson['error'];
+                        // ignore: use_build_context_synchronously
+                        LoadingDialog.hide(context);
+                        // ignore: use_build_context_synchronously
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: const Text("Error"),
+                              content: Text(error),
+                              actions: [
+                                TextButton(
+                                  child: const Text("Close"),
+                                  onPressed: () {
+                                    LoadingDialog.hide(context);
+                                  },
+                                ),
+                              ],
+                            );
+                          },
                         );
-                      },
-                    );
+                      } catch (e) {
+                        // If JSON decoding fails, display a generic error message
+                        // ignore: use_build_context_synchronously
+                        LoadingDialog.hide(context);
+                        // ignore: use_build_context_synchronously
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: const Text("Error"),
+                              content: const Text(
+                                  "An error occurred. Please try again."),
+                              actions: [
+                                TextButton(
+                                  child: Text("Close"),
+                                  onPressed: () {
+                                    LoadingDialog.hide(context);
+                                  },
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      }
+                    } else {
+                      print(response.reasonPhrase);
+                      // TODO: Handle errors
+                    }
                   } catch (e) {
-                    // If JSON decoding fails, display a generic error message
-                    // ignore: use_build_context_synchronously
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          title: const Text("Error"),
-                          content: const Text(
-                              "An error occurred. Please try again."),
-                          actions: [
-                            TextButton(
-                              child: Text("Close"),
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
+                    if (e is SocketException) {
+                      // Handle network-related errors here
+                      print("Network error: $e");
+                      // You can throw a custom network error here if needed.
+                      // ignore: use_build_context_synchronously
+                      LoadingDialog.hide(context);
+                      // ignore: use_build_context_synchronously
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: const Center(
+                              child: Text(
+                                "Network Error",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
-                          ],
-                        );
-                      },
-                    );
+                            content: const Text(
+                              "Network error: Failed to connect to network",
+                              style: TextStyle(
+                                color: Colors
+                                    .red, // Set the content text color to red
+                              ),
+                            ),
+                            actions: [
+                              TextButton(
+                                child: Text("Close"),
+                                onPressed: () {
+                                  LoadingDialog.hide(context);
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    } else {
+                      // Handle other exceptions here
+                      // ignore: use_build_context_synchronously
+                      LoadingDialog.hide(context);
+                      print("Other error: $e");
+                    }
                   }
-                } else {
-                  print(response.reasonPhrase);
-                  // TODO: Handle errors
                 }
-              }
-            },
-          ),
+              }),
           SizedBox(height: SizeConfig.screenHeight * 0.1),
-          NoAccountText(),
+          const NoAccountText(),
         ],
       ),
     );
