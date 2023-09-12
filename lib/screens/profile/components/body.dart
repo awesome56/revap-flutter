@@ -42,7 +42,6 @@ class Body extends StatelessWidget {
                 builder: (BuildContext context) {
                   return LogoutConfirmationDialog(
                     onConfirm: () {
-                      // Handle logout action here, e.g., navigate to login screen.
                       // You can also perform any additional cleanup if needed.
                       Navigator.pushReplacementNamed(
                           context, SignInScreen.routeName);

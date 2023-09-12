@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:revap/components/coustom_bottom_nav_bar.dart';
-import 'package:revap/enums.dart';
 import 'package:revap/constants.dart';
 import 'package:revap/modals/add_company/add_company_screen.dart';
+import 'package:revap/enums.dart';
 
 import 'components/body.dart';
 
-class HomeScreen extends StatelessWidget {
-  static String routeName = "/home";
+class CompanyScreen extends StatelessWidget {
+  static String routeName = "/cart";
 
-  // Callback function to open the AddCompanyScreen as a dialog
   void openAddCompanyDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -19,9 +18,11 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
+  const CompanyScreen({super.key});
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: buildAppBar(context),
       body: Body(),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -32,7 +33,21 @@ class HomeScreen extends StatelessWidget {
         child: Icon(Icons.add), // Customize the FAB icon as needed
         backgroundColor: kPrimaryColor,
       ),
-      bottomNavigationBar: CustomBottomNavBar(selectedMenu: MenuState.home),
+      bottomNavigationBar:
+          const CustomBottomNavBar(selectedMenu: MenuState.company),
+    );
+  }
+
+  AppBar buildAppBar(BuildContext context) {
+    return AppBar(
+      title: const Column(
+        children: [
+          Text(
+            "My companies",
+            style: TextStyle(color: Colors.black),
+          ),
+        ],
+      ),
     );
   }
 }

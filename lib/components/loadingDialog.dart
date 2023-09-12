@@ -18,14 +18,31 @@ class LoadingDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20.0),
+      ),
+      elevation: 0.0,
+      backgroundColor: Colors.transparent,
       child: Container(
-        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20.0),
+        ),
         child: const Row(
           mainAxisSize: MainAxisSize.min,
-          children: [
-            CircularProgressIndicator(),
+          children: <Widget>[
+            Padding(
+              padding: EdgeInsets.all(16.0),
+              child: CircularProgressIndicator(),
+            ),
             SizedBox(width: 20),
-            Text("Please wait..."),
+            Text(
+              "Please wait...",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 18.0,
+              ),
+            ),
           ],
         ),
       ),

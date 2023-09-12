@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:revap/models/user.dart';
 
 class LogoutConfirmationDialog extends StatelessWidget {
   final Function onConfirm;
+  final User user = User();
 
   LogoutConfirmationDialog({required this.onConfirm});
 
@@ -22,8 +23,8 @@ class LogoutConfirmationDialog extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.all(16.0),
+            const Padding(
+              padding: EdgeInsets.all(16.0),
               child: Text(
                 "Log out of your account?",
                 style: TextStyle(
@@ -40,7 +41,7 @@ class LogoutConfirmationDialog extends StatelessWidget {
                   onPressed: () {
                     Navigator.of(context).pop(); // Close the dialog
                   },
-                  child: Text(
+                  child: const Text(
                     "Cancel",
                     style: TextStyle(color: Colors.black54),
                   ),
@@ -48,11 +49,11 @@ class LogoutConfirmationDialog extends StatelessWidget {
                 TextButton(
                   onPressed: () {
                     // Clear user details from SharedPreferences
-                    clearUserDetails();
+                    user.clearUserData();
                     Navigator.of(context).pop(); // Close the dialog
                     onConfirm(); // Trigger the logout action
                   },
-                  child: Text(
+                  child: const Text(
                     "Log out",
                     style: TextStyle(
                       color: Colors.red,
@@ -66,14 +67,5 @@ class LogoutConfirmationDialog extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  void clearUserDetails() async {
-    final prefs = await SharedPreferences.getInstance();
-    prefs.remove('refreshToken');
-    prefs.remove('accessToken');
-    prefs.remove('userName');
-    prefs.remove('userEmail');
-    prefs.remove('isUserVerified');
   }
 }

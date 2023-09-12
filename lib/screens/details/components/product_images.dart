@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:revap/models/Product.dart';
+import 'package:revap/models/Company.dart';
 
 import '../../../constants.dart';
 import '../../../size_config.dart';
 
-class ProductImages extends StatefulWidget {
-  const ProductImages({
+class CompanyImages extends StatefulWidget {
+  const CompanyImages({
     Key? key,
-    required this.product,
+    required this.company,
   }) : super(key: key);
 
-  final Product product;
+  final Company company;
 
   @override
-  _ProductImagesState createState() => _ProductImagesState();
+  _CompanyImagesState createState() => _CompanyImagesState();
 }
 
-class _ProductImagesState extends State<ProductImages> {
+class _CompanyImagesState extends State<CompanyImages> {
   int selectedImage = 0;
   @override
   Widget build(BuildContext context) {
@@ -27,8 +27,8 @@ class _ProductImagesState extends State<ProductImages> {
           child: AspectRatio(
             aspectRatio: 1,
             child: Hero(
-              tag: widget.product.id.toString(),
-              child: Image.asset(widget.product.images[selectedImage]),
+              tag: widget.company.id.toString(),
+              child: Image.asset(widget.company.img[selectedImage]),
             ),
           ),
         ),
@@ -36,7 +36,7 @@ class _ProductImagesState extends State<ProductImages> {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            ...List.generate(widget.product.images.length,
+            ...List.generate(widget.company.img.length,
                 (index) => buildSmallProductPreview(index)),
           ],
         )
@@ -63,7 +63,7 @@ class _ProductImagesState extends State<ProductImages> {
           border: Border.all(
               color: kPrimaryColor.withOpacity(selectedImage == index ? 1 : 0)),
         ),
-        child: Image.asset(widget.product.images[index]),
+        child: Image.asset(widget.company.img),
       ),
     );
   }

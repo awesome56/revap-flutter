@@ -2,11 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:revap/components/default_button.dart';
 import 'package:revap/screens/home/home_screen.dart';
 import 'package:revap/size_config.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:revap/screens/login_success/login_success_screen.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:revap/models/User.dart';
 import 'package:revap/components/loadingDialog.dart';
 
 import '../../../constants.dart';
@@ -37,6 +33,8 @@ class _OtpFormState extends State<OtpForm> {
   String otp5 = "";
   String otp6 = "";
 
+  bool isButtonEnabled = false;
+
   @override
   void initState() {
     super.initState();
@@ -65,66 +63,73 @@ class _OtpFormState extends State<OtpForm> {
 
   void verifyOtp() async {
     LoadingDialog.show(context);
-    var headers = {'Content-Type': 'application/json'};
-    var email = Uri.encodeComponent(widget.email); // Encode the email value
-    var apiUrl =
-        'https://revap-api-6f16447151c5.herokuapp.com/api/v1/auth/verifyemail/$email';
-
     otp = otp1 + otp2 + otp3 + otp4 + otp5 + otp6;
 
-    var request = http.Request('POST', Uri.parse(apiUrl));
-    request.body = json.encode({
-      "code": otp,
-    });
-    request.headers.addAll(headers);
+    User user = User();
+    final result = await user.verifyOtp(widget.email, otp);
 
-    http.StreamedResponse response = await request.send();
+    // ignore: use_build_context_synchronously
+    LoadingDialog.hide(context);
 
-    if (response.statusCode == 202) {
-      print(await response.stream.bytesToString());
+    if (result['success']) {
       // ignore: use_build_context_synchronously
       LoadingDialog.hide(context);
-      // TODO: Handle successful verification
+      // Successful verification
       // ignore: use_build_context_synchronously
       Navigator.pushReplacementNamed(context, HomeScreen.routeName);
-
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      Map<String, dynamic> userJson =
-          json.decode(await response.stream.bytesToString());
-      prefs.setString('refreshToken', userJson['user']['refresh']);
-      prefs.setString('accessToken', userJson['user']['access']);
-      prefs.setString('userName', userJson['user']['name']);
-      prefs.setString('userEmail', userJson['user']['email']);
-      prefs.setBool('isUserVerified', userJson['user']['verified']);
-    } else if (response.statusCode == 400 || response.statusCode == 404) {
-      // Display error toast from the API response
-      String errorMessage = await response.stream.bytesToString();
-      try {
-        Map<String, dynamic> errorJson = json.decode(errorMessage);
-        String error = errorJson['error'];
-        // ignore: use_build_context_synchronously
-        LoadingDialog.hide(context);
-        Fluttertoast.showToast(
-          msg: error,
-          toastLength: Toast.LENGTH_LONG,
-          gravity: ToastGravity.CENTER,
-          backgroundColor: Color(0xFF083663),
-          textColor: Colors.white,
-        );
-      } catch (e) {
-        // If JSON decoding fails, display a generic error message
-        // ignore: use_build_context_synchronously
-        LoadingDialog.hide(context);
-        Fluttertoast.showToast(
-          msg: "An error occurred. Please try again.",
-          toastLength: Toast.LENGTH_LONG,
-          gravity: ToastGravity.CENTER,
-          backgroundColor: Color(0xFF083663),
-          textColor: Colors.white,
-        );
-      }
     } else {
-      // Handle other status codes or errors
+      // ignore: use_build_context_synchronously
+      LoadingDialog.hide(context);
+      // Display error toast
+      // ignore: use_build_context_synchronously
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20.0),
+            ),
+            elevation: 0.0,
+            backgroundColor: Colors.transparent,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20.0),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Text(
+                      result['error'],
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18.0,
+                          color: Color.fromARGB(206, 250, 1, 1)),
+                    ),
+                  ),
+                  Divider(),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: <Widget>[
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop(); // Close the dialog
+                        },
+                        child: const Text(
+                          "Close",
+                          style: TextStyle(color: kPrimaryColor),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
     }
   }
 
@@ -228,6 +233,22 @@ class _OtpFormState extends State<OtpForm> {
                       pin6FocusNode!.unfocus();
                       // Then you need to check is the code is correct or not
                     }
+
+                    // Check if all OTP fields are filled to enable the button
+                    if (otp1.isNotEmpty &&
+                        otp2.isNotEmpty &&
+                        otp3.isNotEmpty &&
+                        otp4.isNotEmpty &&
+                        otp5.isNotEmpty &&
+                        otp6.isNotEmpty) {
+                      setState(() {
+                        isButtonEnabled = true;
+                      });
+                    } else {
+                      setState(() {
+                        isButtonEnabled = false;
+                      });
+                    }
                   },
                 ),
               ),
@@ -236,7 +257,7 @@ class _OtpFormState extends State<OtpForm> {
           SizedBox(height: SizeConfig.screenHeight * 0.15),
           DefaultButton(
             text: "Continue",
-            press: verifyOtp,
+            press: isButtonEnabled ? verifyOtp : null,
           )
         ],
       ),
