@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:revap/screens/cart/cart_screen.dart';
+import 'package:flutter_svg/svg.dart';
 
 import '../../../size_config.dart';
 import 'icon_btn_with_counter.dart';
@@ -18,14 +18,25 @@ class HomeHeader extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          IconButton(
+            onPressed: () {
+              // Handle onPressed event here
+            },
+            icon: InkWell(
+              child: SvgPicture.asset(
+                "assets/icons/Hamburger-menu.svg",
+                color: Colors.black54, // Set the color here
+                width: 24, // Set the width here
+                height: 24, // Set the height here
+              ),
+              onTap: () {
+                // Handle onTap event here
+              },
+            ),
+          ),
           SearchField(),
           IconBtnWithCounter(
-            svgSrc: "assets/icons/Cart Icon.svg",
-            press: () => Navigator.pushNamed(context, CartScreen.routeName),
-          ),
-          IconBtnWithCounter(
-            svgSrc: "assets/icons/Bell.svg",
-            numOfitem: 3,
+            svgSrc: "assets/icons/Camera Icon2.svg",
             press: () {},
           ),
         ],

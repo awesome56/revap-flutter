@@ -5,9 +5,9 @@ import 'package:revap/constants.dart';
 import '../../../size_config.dart';
 
 class CustomAppBar extends StatelessWidget {
-  final double rating;
+  final String name;
 
-  CustomAppBar({required this.rating});
+  CustomAppBar({required this.name});
 
   @override
   // AppBar().preferredSize.height provide us the height that appy on our app bar
@@ -50,7 +50,7 @@ class CustomAppBar extends StatelessWidget {
               child: Row(
                 children: [
                   Text(
-                    "$rating",
+                    "$name",
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,

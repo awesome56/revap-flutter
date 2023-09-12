@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-
+import 'package:revap/logout.dart';
+import 'package:revap/screens/sign_in/sign_in_screen.dart';
 import 'profile_menu.dart';
 import 'profile_pic.dart';
 
@@ -35,7 +36,20 @@ class Body extends StatelessWidget {
           ProfileMenu(
             text: "Log Out",
             icon: "assets/icons/Log out.svg",
-            press: () {},
+            press: () {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return LogoutConfirmationDialog(
+                    onConfirm: () {
+                      // You can also perform any additional cleanup if needed.
+                      Navigator.pushReplacementNamed(
+                          context, SignInScreen.routeName);
+                    },
+                  );
+                },
+              );
+            },
           ),
         ],
       ),

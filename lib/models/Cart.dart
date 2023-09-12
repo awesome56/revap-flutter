@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 
-import 'Product.dart';
+import 'Company.dart';
 
 class Cart {
-  final Product product;
+  final Company company;
   final int numOfItem;
 
-  Cart({required this.product, required this.numOfItem});
+  Cart({required this.company, required this.numOfItem});
 }
 
 // Demo data for our cart
 
-List<Cart> demoCarts = [
-  Cart(product: demoProducts[0], numOfItem: 2),
-  Cart(product: demoProducts[1], numOfItem: 1),
-  Cart(product: demoProducts[3], numOfItem: 1),
-];
+// List<Cart> demoCarts = [
+//   Cart(company: demoProducts[0], numOfItem: 2),
+//   Cart(company: demoProducts[1], numOfItem: 1),
+//   Cart(company: demoProducts[3], numOfItem: 1),
+// ];

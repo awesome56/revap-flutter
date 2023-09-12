@@ -1,9 +1,9 @@
 import 'dart:async';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:revap/constants.dart';
 import 'package:revap/size_config.dart';
+import 'package:revap/models/User.dart';
+import 'package:revap/components/loadingDialog.dart';
 
 import 'otp_form.dart';
 
@@ -20,6 +20,7 @@ class _BodyState extends State<Body> {
   late String purpose;
   late int expiration;
   late int timerDuration;
+  late Timer _timer;
   bool isButtonEnabled = false;
 
   @override
@@ -37,7 +38,7 @@ class _BodyState extends State<Body> {
 
   void startTimer() {
     const oneSec = Duration(seconds: 1);
-    Timer.periodic(oneSec, (timer) {
+    _timer = Timer.periodic(oneSec, (timer) {
       setState(() {
         if (timerDuration <= 0) {
           timer.cancel();
@@ -49,99 +50,140 @@ class _BodyState extends State<Body> {
     });
   }
 
+  @override
+  void dispose() {
+    // Cancel the timer when the widget is disposed
+    _timer.cancel();
+    super.dispose();
+  }
+
   void resendOTP() async {
-    // TODO: Implement logic to resend OTP through API
-    var request = http.Request(
-        'GET',
-        Uri.parse(
-            'https://revap-api-6f16447151c5.herokuapp.com/api/v1/auth/resendverify/$email'));
+    LoadingDialog.show(context);
 
-    http.StreamedResponse response = await request.send();
+    User user = User();
+    final result = await user.resendOtp(email);
 
-    if (response.statusCode == 200) {
-      // Handle successful resend
-      String responseBody = await response.stream.bytesToString();
-      Map<String, dynamic> responseJson = json.decode(responseBody);
-      String message = responseJson['msg'];
-
+    if (result['success']) {
+      setState(() {
+        timerDuration = expiration * 60;
+        isButtonEnabled = false;
+        startTimer();
+      });
+      // Successful resend
+      // ignore: use_build_context_synchronously
+      LoadingDialog.hide(context);
+      // Show a success dialog or toast message here
       // ignore: use_build_context_synchronously
       showDialog(
         context: context,
         builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text("Success"),
-            content: Text(message),
-            actions: [
-              TextButton(
-                child: Text("Close"),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
+          return Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20.0),
+            ),
+            elevation: 0.0,
+            backgroundColor: Colors.transparent,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20.0),
               ),
-            ],
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Text(
+                      "OTP has been resent to your email",
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18.0,
+                          color: kPrimaryColor),
+                    ),
+                  ),
+                  Divider(),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: <Widget>[
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop(); // Close the dialog
+                        },
+                        child: const Text(
+                          "Close",
+                          style: TextStyle(color: kPrimaryColor),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
           );
         },
       );
-    } else if (response.statusCode == 400 ||
-        response.statusCode == 404 ||
-        response.statusCode == 409) {
-      // Display error toast from the API response
-      String errorMessage = await response.stream.bytesToString();
-      try {
-        Map<String, dynamic> errorJson = json.decode(errorMessage);
-        String error = errorJson['error'];
-        // ignore: use_build_context_synchronously
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text("Error"),
-              content: Text(error),
-              actions: [
-                TextButton(
-                  child: Text("Close"),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                ),
-              ],
-            );
-          },
-        );
-      } catch (e) {
-        // If JSON decoding fails, display a generic error message
-        // ignore: use_build_context_synchronously
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text("Error"),
-              content: Text("An error occurred. Please try again."),
-              actions: [
-                TextButton(
-                  child: Text("Close"),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                ),
-              ],
-            );
-          },
-        );
-      }
-    } else {}
-    setState(() {
-      timerDuration = expiration * 60;
-      isButtonEnabled = false;
-      startTimer();
-    });
+    } else {
+      // Resend failed
+      // ignore: use_build_context_synchronously
+      LoadingDialog.hide(context);
+      // Show an error dialog or toast message here
+      // ignore: use_build_context_synchronously
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20.0),
+            ),
+            elevation: 0.0,
+            backgroundColor: Colors.transparent,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20.0),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Text(
+                      result['error'],
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18.0,
+                          color: Color.fromARGB(206, 250, 1, 1)),
+                    ),
+                  ),
+                  Divider(),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: <Widget>[
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop(); // Close the dialog
+                        },
+                        child: const Text(
+                          "Close",
+                          style: TextStyle(color: kPrimaryColor),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     if (widget.otpData == null) {
       // Handle the case where otpData is not available
-      return Scaffold(
+      return const Scaffold(
           //...
           );
     }
@@ -167,7 +209,7 @@ class _BodyState extends State<Body> {
                         resendOTP();
                       }
                     : null,
-                child: Text("Resend OTP Code"),
+                child: const Text("Resend OTP Code"),
               ),
               OtpForm(
                 email: email,
