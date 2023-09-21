@@ -14,46 +14,53 @@ class CompanyCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Column(
       children: [
-        SizedBox(
-          width: 88,
-          child: AspectRatio(
-            aspectRatio: 0.88,
-            child: Container(
-              padding: EdgeInsets.all(getProportionateScreenWidth(10)),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF5F6F9),
-                borderRadius: BorderRadius.circular(15),
-              ),
-              child: Image.asset(
-                company.img.isEmpty
-                    ? "assets/images/company-logo.png"
-                    : company.img,
-                fit: BoxFit.cover, // Make the image fit inside the Container
-              ),
+        ListTile(
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: getProportionateScreenWidth(20),
+            vertical: getProportionateScreenWidth(10),
+          ),
+          leading: SizedBox(
+            width: 88,
+            height: 88,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(15),
+              child: company.img.isEmpty
+                  ? Image.asset(
+                      "assets/images/company-logo.png",
+                      fit: BoxFit.cover,
+                    )
+                  : Image.network(
+                      (kUrl + company.img).replaceFirst("/api/v1/app/src", ''),
+                      fit: BoxFit.cover,
+                    ),
+            ),
+          ),
+          title: Text(
+            company.name,
+            style: const TextStyle(
+              color: Colors.black,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+            maxLines: 2,
+          ),
+          subtitle: Text(
+            company.category,
+            style: const TextStyle(
+              color: kPrimaryColor,
+              fontSize: 13,
             ),
           ),
         ),
-        const SizedBox(width: 20),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              company.name,
-              style: const TextStyle(color: Colors.black, fontSize: 16),
-              maxLines: 2,
-            ),
-            const SizedBox(height: 10),
-            Text.rich(
-              TextSpan(
-                text: company.category,
-                style: const TextStyle(
-                    fontWeight: FontWeight.w600, color: kPrimaryColor),
-              ),
-            )
-          ],
-        )
+        Divider(
+          // You can adjust the thickness of the divider
+          indent:
+              getProportionateScreenWidth(20), // Adjust the left indentation
+          endIndent:
+              getProportionateScreenWidth(20), // Adjust the right indentation
+        ),
       ],
     );
   }
