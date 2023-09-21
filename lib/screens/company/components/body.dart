@@ -73,7 +73,7 @@ class _BodyState extends State<Body> {
             child: ListView.builder(
               itemCount: companyList.length,
               itemBuilder: (context, index) => Padding(
-                padding: EdgeInsets.symmetric(vertical: 10),
+                padding: EdgeInsets.symmetric(vertical: 0),
                 child: GestureDetector(
                   onTap: () {
                     Navigator.pushNamed(context, DetailsScreen.routeName);
@@ -83,7 +83,7 @@ class _BodyState extends State<Body> {
               ),
             ),
           ),
-          Divider(), // Add a line divider
+          // Divider(), // Add a line divider
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 10),
             child: Text(

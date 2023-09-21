@@ -14,6 +14,8 @@ import '../../../constants.dart';
 import '../../../size_config.dart';
 
 class SignForm extends StatefulWidget {
+  const SignForm({super.key});
+
   @override
   _SignFormState createState() => _SignFormState();
 }

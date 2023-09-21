@@ -42,6 +42,7 @@ class User {
         // Parse the JSON response and extract the new access token
         Map<String, dynamic> jsonData = json.decode(response.body);
         String? newAccessToken = jsonData['access'];
+        await _storage.write(key: 'accessToken', value: newAccessToken);
         return newAccessToken;
       } else {
         // Handle the error when refreshing the token (e.g., show an error message)

@@ -11,12 +11,12 @@ class HomeScreen extends StatelessWidget {
 
   // Callback function to open the AddCompanyScreen as a dialog
   void openAddCompanyDialog(BuildContext context) {
-    showDialog(
-      context: context,
+    Navigator.of(context).push(MaterialPageRoute<void>(
       builder: (BuildContext context) {
-        return AddCompanyScreen(); // Use your AddCompanyScreen here
+        return const AddCompanyScreen();
       },
-    );
+      fullscreenDialog: true,
+    ));
   }
 
   @override

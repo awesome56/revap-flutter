@@ -91,11 +91,11 @@ class _BodyState extends State<Body> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  Padding(
+                  const Padding(
                     padding: EdgeInsets.all(16.0),
                     child: Text(
                       "OTP has been resent to your email",
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 18.0,
                           color: kPrimaryColor),
