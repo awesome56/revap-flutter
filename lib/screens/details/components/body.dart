@@ -4,9 +4,9 @@ import 'package:revap/models/Company.dart';
 import 'package:revap/size_config.dart';
 
 import 'color_dots.dart';
-import 'product_description.dart';
+import 'company_description.dart';
 import 'top_rounded_container.dart';
-import 'product_images.dart';
+import 'company_images.dart';
 
 class Body extends StatelessWidget {
   final Company company;

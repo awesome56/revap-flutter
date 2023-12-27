@@ -36,7 +36,7 @@ const String kComfirmNullError = "Please comfirm password";
 const String kPhoneNumberNullError = "Please Enter your phone number";
 const String kAddressNullError = "Please Enter your address";
 
-const String kUrl = "https://revap-api-6f16447151c5.herokuapp.com/api/v1";
+const String kUrl = "https://revap.onrender.com/api/v1";
 
 final otpInputDecoration = InputDecoration(
   contentPadding:

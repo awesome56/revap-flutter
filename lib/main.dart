@@ -3,7 +3,7 @@ import 'package:revap/routes.dart';
 import 'package:revap/screens/home/home_screen.dart';
 import 'package:revap/screens/splash/splash_screen.dart';
 import 'package:revap/theme.dart';
-import 'package:revap/models/user.dart';
+import 'package:revap/models/User.dart';
 
 void main() {
   runApp(MyApp());

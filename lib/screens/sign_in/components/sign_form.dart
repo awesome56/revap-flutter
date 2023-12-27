@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:revap/models/user.dart';
+import 'package:revap/models/User.dart';
 import 'package:revap/components/custom_surfix_icon.dart';
 import 'package:revap/components/form_error.dart';
 import 'package:revap/helper/keyboard.dart';

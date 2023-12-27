@@ -80,12 +80,6 @@ class Company {
 
     request.headers.addAll(headers);
 
-    // var response = await http.post(
-    //   Uri.parse('$kUrl/companies/'),
-    //   headers: headers,
-    //   body: json.encode(body),
-    // );
-
     try {
       // Simulate a successful sign-in
       http.StreamedResponse response = await request.send();
@@ -154,26 +148,6 @@ class Company {
         };
       }
     }
-    //   if (response.statusCode == 200) {
-    //     // Company added successfully
-    //     return {
-    //       "name": name,
-    //       "email": email,
-    //       "category": category,
-    //       "website": website,
-    //       "ceo": ceo,
-    //       "head_office": headOffice,
-    //     };
-    //   } else if (response.statusCode == 401) {
-    //     // Customize error handling for 401 here
-    //     throw UnauthorizedException('Unauthorized: You are not logged in.');
-    //   } else {
-    //     throw Exception('Failed to fetch data: ${response.reasonPhrase}');
-    //   }
-    // } catch (e) {
-    //   // Handle exceptions
-    //   return {'error': "An error occurred: $e"};
-    // }
   }
 
 // Function to add a new company image

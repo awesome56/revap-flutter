@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:revap/models/Company.dart';
+import 'package:revap/screens/details/details_screen.dart';
 
 import '../../../constants.dart';
 import '../../../size_config.dart';
@@ -20,6 +21,11 @@ class CompanyCard extends StatelessWidget {
           contentPadding: EdgeInsets.symmetric(
             horizontal: getProportionateScreenWidth(20),
             vertical: getProportionateScreenWidth(10),
+          ),
+          onTap: () => Navigator.pushNamed(
+            context,
+            DetailsScreen.routeName,
+            arguments: CompanyDetailsArguments(company: company),
           ),
           leading: SizedBox(
             width: 88,
