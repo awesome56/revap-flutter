@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:revap/constants.dart';
-import 'package:dropdown_search/dropdown_search.dart';
-import 'package:revap/models/Company.dart';
+import 'package:revap/models/Branch.dart';
 import 'package:revap/models/User.dart';
 import 'package:revap/size_config.dart';
 import 'package:revap/components/loadingDialog.dart';
@@ -9,105 +8,40 @@ import 'package:revap/components/messageDialog.dart';
 import 'package:revap/modals/add_company_image/add_company_image_screen.dart';
 import 'package:revap/screens/sign_in/sign_in_screen.dart';
 
-class AddCompanyScreen extends StatefulWidget {
+class AddBranchScreen extends StatefulWidget {
   static String routeName = "/complete_profile";
+  final int company_id;
 
-  const AddCompanyScreen({super.key});
+  const AddBranchScreen({required this.company_id, Key? key}) : super(key: key);
 
   @override
-  State<AddCompanyScreen> createState() => _AddCompanyScreenState();
+  State<AddBranchScreen> createState() => _AddBranchScreenState();
 }
 
-class _AddCompanyScreenState extends State<AddCompanyScreen> {
+class _AddBranchScreenState extends State<AddBranchScreen> {
   final _formKey = GlobalKey<FormState>();
-  String? name;
-  String? email;
-  String? website;
-  String? ceo;
-  String? head_office;
-  Company company = Company();
+  int? company_id;
+  String? name, description, phone, email, website, manager, location;
+  Branch branch = Branch();
   User user = User();
-  bool agreedToTerms = false;
-  List<String> selectedCategories = [];
-  final List<String> items = [
-    "Technology",
-    "Healthcare",
-    "Finance",
-    "Retail",
-    "Entertainment",
-    "Manufacturing",
-    "Education",
-    "Food & Beverage",
-    "Transportation",
-    "Real Estate",
-    "Small Business",
-    "Medium-sized Enterprise (SME)",
-    "Large Corporation",
-    "Local",
-    "National",
-    "International",
-    "Startup",
-    "Non-profit",
-    "Government",
-    "E-commerce",
-    "Consulting",
-    "Service",
-    "Product",
-    "Diversity & Inclusion",
-    "Sustainability",
-    "Innovation",
-    "Social Responsibility",
-    "Work-Life Balance",
-    "Software",
-    "Hardware",
-    "Healthcare Providers",
-    "Restaurants",
-    "Retailers",
-    "Entertainment Services",
-    "Early-stage",
-    "Growth-stage",
-    "Established",
-    "Specialized",
-    "Top-rated companies",
-    "User-reviewed companies",
-    "Industry Awards",
-    "Franchise",
-    "Independent",
-    "Publicly traded",
-    "Privately owned",
-    "Family-owned",
-    "Accessible",
-    "Online-only",
-    "Physical locations",
-    "Partnerships",
-    "Supply Chain",
-    "Financial Metrics",
-    "Subscription Models",
-    "Customer Demographics",
-    "Product Pricing",
-    "Tech Hubs",
-    "Health and Safety Measures",
-    "Innovation Labs",
-    "Community Involvement",
-    "Historical Significance",
-    "Environmental Impact",
-    "Global Brands",
-    "Local Brands",
-    "Art and Culture",
-    "Legal and Compliance",
-  ];
+
+  @override
+  void initState() {
+    super.initState();
+    company_id = widget.company_id;
+  }
 
   // Function to handle the "Next" button click
   Future<void> _handleNextButtonClick() async {
-    if (_formKey.currentState!.validate() && agreedToTerms) {
+    if (_formKey.currentState!.validate()) {
       LoadingDialog.show(context);
       try {
         _formKey.currentState!.save();
         String? accessToken = await user.getAccessToken();
 
         if (accessToken != null) {
-          final result = await company.addCompany(accessToken, name!, email!,
-              selectedCategories.toString(), website!, ceo!, head_office!);
+          final result = await branch.addBranch(company_id!, accessToken, name!,
+              description!, phone!, email!, website!, manager!, location!);
           if (result['success'] == true) {
             // ignore: use_build_context_synchronously
             LoadingDialog.hide(context);
@@ -117,13 +51,15 @@ class _AddCompanyScreenState extends State<AddCompanyScreen> {
               MaterialPageRoute(
                   builder: (context) => AddCompanyImageScreen(formData: {
                         "id": result["data"]['id'],
+                        "company_id": result["data"]['company_id'],
                         "name": result["data"]['name'],
                         "email": result["data"]['email'],
-                        "category": result["data"]['category'],
-                        "ceo": result["data"]['ceo'],
-                        "head_office": result["data"]['head_office'],
-                        "img": result["data"]['img'],
-                        "verified": result["data"]['verified'],
+                        "phone": result["data"]['phone'],
+                        "manager": result["data"]['manager'],
+                        "location": result["data"]['location'],
+                        "img": result["data"]['name'],
+                        "code": result["data"]['code'],
+                        "qrcode": result["data"]['qrcode'],
                         "website": result["data"]['website'],
                         "created_at": result["data"]['created_at'],
                         "updated_at": result["data"]['updated_at'],
@@ -132,14 +68,16 @@ class _AddCompanyScreenState extends State<AddCompanyScreen> {
           } else if (result['success'] == 401) {
             String? newAccessToken = await user.getRefreshToken();
             if (newAccessToken != null) {
-              final result = await company.addCompany(
+              final result = await branch.addBranch(
+                  company_id!,
                   newAccessToken,
                   name!,
+                  description!,
+                  phone!,
                   email!,
-                  selectedCategories.toString(),
                   website!,
-                  ceo!,
-                  head_office!);
+                  manager!,
+                  location!);
 
               if (result['success'] == true) {
                 // ignore: use_build_context_synchronously
@@ -150,13 +88,16 @@ class _AddCompanyScreenState extends State<AddCompanyScreen> {
                   MaterialPageRoute(
                       builder: (context) => AddCompanyImageScreen(formData: {
                             "id": result["data"]['id'],
+                            "company_id": result["data"]['company_id'],
                             "name": result["data"]['name'],
+                            "description": result["data"]['description'],
                             "email": result["data"]['email'],
-                            "category": result["data"]['category'],
-                            "ceo": result["data"]['ceo'],
-                            "head_office": result["data"]['head_office'],
-                            "img": result["data"]['img'],
-                            "verified": result["data"]['verified'],
+                            "phone": result["data"]['phone'],
+                            "manager": result["data"]['manager'],
+                            "location": result["data"]['location'],
+                            "img": result["data"]['name'],
+                            "code": result["data"]['code'],
+                            "qrcode": result["data"]['qrcode'],
                             "website": result["data"]['website'],
                             "created_at": result["data"]['created_at'],
                             "updated_at": result["data"]['updated_at'],
@@ -243,37 +184,18 @@ class _AddCompanyScreenState extends State<AddCompanyScreen> {
                       SizedBox(height: SizeConfig.screenHeight * 0.03),
                       buildNameFormField(),
                       const SizedBox(height: 30),
-                      buildEmailFormField(),
+                      buildDescriptionFormField(),
                       const SizedBox(height: 30),
-                      buildDropdownSearchFormField(items),
+                      buildPhoneFormField(),
+                      const SizedBox(height: 30),
+                      buildEmailFormField(),
                       const SizedBox(height: 30),
                       buildWebsiteFormField(),
                       const SizedBox(height: 30),
-                      buildCeoFormField(),
+                      buildManagerFormField(),
                       const SizedBox(height: 30),
-                      buildAddressFormField(),
+                      buildLocationFormField(),
                       const SizedBox(height: 40),
-                      SizedBox(
-                          height: getProportionateScreenHeight(
-                              10)), // Adjust the spacing
-                      Row(
-                        children: [
-                          Checkbox(
-                            value: agreedToTerms,
-                            onChanged: (newValue) {
-                              setState(() {
-                                agreedToTerms = newValue!;
-                              });
-                            },
-                          ),
-                          Flexible(
-                            child: Text(
-                              "By continuing you confirm that you agree with our Terms and Conditions",
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                          ),
-                        ],
-                      ),
                       SizedBox(
                           height: getProportionateScreenHeight(
                               20)), // Adjust the spacing
@@ -288,49 +210,29 @@ class _AddCompanyScreenState extends State<AddCompanyScreen> {
     );
   }
 
-  DropdownSearch<String> buildDropdownSearchFormField(List<String> items) {
-    return DropdownSearch<String>.multiSelection(
-      items: items,
-      popupProps: const PopupPropsMultiSelection.modalBottomSheet(
-        showSelectedItems: true,
-        // disabledItemFn: (String s) => s.startsWith('I'),
-        showSearchBox: true,
-      ),
-      onSaved: (selectedItems) => selectedCategories = selectedItems!,
-      validator: (selectedItems) {
-        if (selectedItems!.isEmpty) {
-          return 'Please select at least one category.';
+  TextFormField buildLocationFormField() {
+    return TextFormField(
+      onSaved: (newValue) => location = newValue,
+      validator: (value) {
+        if (value!.isEmpty) {
+          return 'Please enter branch location.';
         }
         return null;
       },
-      dropdownDecoratorProps: const DropDownDecoratorProps(
-        dropdownSearchDecoration: InputDecoration(
-          labelText: "Categories",
-          hintText: "Select one or more category",
-          floatingLabelBehavior: FloatingLabelBehavior.always,
-        ),
-      ),
-      selectedItems: selectedCategories,
-    );
-  }
-
-  TextFormField buildAddressFormField() {
-    return TextFormField(
-      onSaved: (newValue) => head_office = newValue,
       decoration: const InputDecoration(
-        labelText: "Head office",
-        hintText: "Enter Head office address",
+        labelText: "Location",
+        hintText: "Enter location of branch",
         floatingLabelBehavior: FloatingLabelBehavior.always,
       ),
     );
   }
 
-  TextFormField buildCeoFormField() {
+  TextFormField buildManagerFormField() {
     return TextFormField(
-      onSaved: (newValue) => ceo = newValue,
+      onSaved: (newValue) => manager = newValue,
       decoration: const InputDecoration(
-        labelText: "CEO/ Manager",
-        hintText: "Enter CEO name",
+        labelText: "Manager",
+        hintText: "Enter manager name",
         floatingLabelBehavior: FloatingLabelBehavior.always,
       ),
     );
@@ -341,7 +243,7 @@ class _AddCompanyScreenState extends State<AddCompanyScreen> {
       onSaved: (newValue) => website = newValue,
       decoration: const InputDecoration(
         labelText: "Website",
-        hintText: "Enter company website",
+        hintText: "Enter branch website",
         floatingLabelBehavior: FloatingLabelBehavior.always,
       ),
     );
@@ -358,12 +260,37 @@ class _AddCompanyScreenState extends State<AddCompanyScreen> {
     );
   }
 
+  TextFormField buildPhoneFormField() {
+    return TextFormField(
+      onSaved: (newValue) => phone = newValue,
+      decoration: const InputDecoration(
+        labelText: "Phone",
+        hintText: "Enter branch phone",
+        floatingLabelBehavior: FloatingLabelBehavior.always,
+      ),
+    );
+  }
+
+  TextFormField buildDescriptionFormField() {
+    return TextFormField(
+      maxLines: 3, // Allow up to 3 lines of text
+      onSaved: (newValue) => description = newValue,
+      decoration: const InputDecoration(
+        labelText: "Description",
+        hintText: "Enter branch description",
+        floatingLabelBehavior: FloatingLabelBehavior.always,
+      ),
+      textInputAction:
+          TextInputAction.newline, // Display a newline button on the keyboard
+    );
+  }
+
   TextFormField buildNameFormField() {
     return TextFormField(
       onSaved: (newValue) => name = newValue,
       validator: (value) {
         if (value!.isEmpty) {
-          return 'Please enter a company name.';
+          return 'Please enter a branch name.';
         }
         return null;
       },

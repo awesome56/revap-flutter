@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:revap/models/company.dart';
+import 'package:revap/models/Company.dart';
 
 import '../../../constants.dart';
 import '../../../size_config.dart';

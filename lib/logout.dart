@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:revap/models/user.dart';
+import 'package:revap/models/User.dart';
 
 class LogoutConfirmationDialog extends StatelessWidget {
   final Function onConfirm;
